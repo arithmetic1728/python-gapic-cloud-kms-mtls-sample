@@ -1,7 +1,9 @@
-from google.auth.transport import mtls
-import google.oauth2.credentials
-from google.cloud.kms import KeyManagementServiceClient
 import google.api_core.client_options as ClientOptions
+import google.api_core.path_template
+from google.auth.transport import mtls
+from google.cloud.kms import KeyManagementServiceClient
+from google.cloud.kms import ListKeyRingsRequest
+import google.oauth2.credentials
 
 
 # Fill in your project_id.
@@ -35,13 +37,10 @@ def list_key_rings():
     client = KeyManagementServiceClient(credentials=cred, client_options=client_options)
 
     # Lists keys in the "global" location.
-    location = "global"
-
-    # The resource name of the location associated with the key rings.
-    parent = client.location_path(project_id, location)
+    parent = "projects/{project}/locations/global".format(project)
 
     # Lists key rings
-    response = client.list_key_rings(parent)
+    response = client.list_key_rings(parent=parent)
     response_list = list(response)
 
     if len(response_list) > 0:
