@@ -37,7 +37,7 @@ def list_key_rings():
     client = KeyManagementServiceClient(credentials=cred, client_options=client_options)
 
     # Lists keys in the "global" location.
-    parent = "projects/{project}/locations/global".format(project)
+    parent = "projects/{project}/locations/{location}".format(project=project_id, location="global")
 
     # Lists key rings
     response = client.list_key_rings(parent=parent)
