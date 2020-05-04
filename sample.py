@@ -7,7 +7,7 @@ import google.oauth2.credentials
 
 
 # Fill in your project_id.
-project_id = "your_project_id"
+project_id = "<YOUR_PROJECT_ID>"
 
 
 def list_key_rings():
