@@ -15,7 +15,7 @@ def list_key_rings():
     cred = google.oauth2.credentials.UserAccessTokenCredentials()
 
     # If device client certificate exists, it will be used to establish mutual TLS connection,
-    # and the pubsub client will automatically switch to pubsub mtls endpoint.
+    # and the KMS client will automatically switch to KMS mtls endpoint.
     # If device client certificate doesn't exists, mutual TLS connection will not be established,
     # and the default mtls endpoint will be used.
     # The existence of device client certificate can be checked via
@@ -37,7 +37,9 @@ def list_key_rings():
     client = KeyManagementServiceClient(credentials=cred, client_options=client_options)
 
     # Lists keys in the "global" location.
-    parent = "projects/{project}/locations/{location}".format(project=project_id, location="global")
+    parent = "projects/{project}/locations/{location}".format(
+        project=project_id, location="global"
+    )
 
     # Lists key rings
     response = client.list_key_rings(parent=parent)
