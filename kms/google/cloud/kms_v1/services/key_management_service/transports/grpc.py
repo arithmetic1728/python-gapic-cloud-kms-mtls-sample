@@ -18,6 +18,7 @@
 from typing import Callable, Dict, Tuple
 
 from google.api_core import grpc_helpers   # type: ignore
+from google import auth                    # type: ignore
 from google.auth import credentials        # type: ignore
 from google.auth.transport.grpc import SslCredentials  # type: ignore
 
@@ -81,7 +82,7 @@ class KeyManagementServiceGrpcTransport(KeyManagementServiceTransport):
                 is None.
 
         Raises:
-          google.auth.exceptions.MutualTlsChannelError: If mutual TLS transport
+          google.auth.exceptions.MutualTLSChannelError: If mutual TLS transport
               creation failed for any reason.
         """
         if channel:
@@ -93,6 +94,9 @@ class KeyManagementServiceGrpcTransport(KeyManagementServiceTransport):
             self._grpc_channel = channel
         elif api_mtls_endpoint:
             host = api_mtls_endpoint if ":" in api_mtls_endpoint else api_mtls_endpoint + ":443"
+
+            if credentials is None:
+                credentials, _ = auth.default(scopes=self.AUTH_SCOPES)
 
             # Create SSL credentials with client_cert_source or application
             # default SSL credentials.
@@ -356,9 +360,9 @@ class KeyManagementServiceGrpcTransport(KeyManagementServiceTransport):
         [CryptoKeyVersion][google.cloud.kms.v1.CryptoKeyVersion]. The
         [CryptoKey.purpose][google.cloud.kms.v1.CryptoKey.purpose] must
         be
-        [ASYMMETRIC_SIGN][google.cloud.kms.v1.CryptoKey.CryptoKeyPurpose.ASYMMETRIC_SIGN]
+        [ASYMMETRIC\_SIGN][google.cloud.kms.v1.CryptoKey.CryptoKeyPurpose.ASYMMETRIC\_SIGN]
         or
-        [ASYMMETRIC_DECRYPT][google.cloud.kms.v1.CryptoKey.CryptoKeyPurpose.ASYMMETRIC_DECRYPT].
+        [ASYMMETRIC\_DECRYPT][google.cloud.kms.v1.CryptoKey.CryptoKeyPurpose.ASYMMETRIC\_DECRYPT].
 
         Returns:
             Callable[[~.GetPublicKeyRequest],
@@ -442,7 +446,7 @@ class KeyManagementServiceGrpcTransport(KeyManagementServiceTransport):
         [KeyRing][google.cloud.kms.v1.KeyRing].
 
         [CryptoKey.purpose][google.cloud.kms.v1.CryptoKey.purpose] and
-        [CryptoKey.version_template.algorithm][google.cloud.kms.v1.CryptoKeyVersionTemplate.algorithm]
+        [CryptoKey.version\_template.algorithm][google.cloud.kms.v1.CryptoKeyVersionTemplate.algorithm]
         are required.
 
         Returns:
@@ -537,7 +541,7 @@ class KeyManagementServiceGrpcTransport(KeyManagementServiceTransport):
         Create a new [ImportJob][google.cloud.kms.v1.ImportJob] within a
         [KeyRing][google.cloud.kms.v1.KeyRing].
 
-        [ImportJob.import_method][google.cloud.kms.v1.ImportJob.import_method]
+        [ImportJob.import\_method][google.cloud.kms.v1.ImportJob.import\_method]
         is required.
 
         Returns:
@@ -633,7 +637,7 @@ class KeyManagementServiceGrpcTransport(KeyManagementServiceTransport):
         [Decrypt][google.cloud.kms.v1.KeyManagementService.Decrypt]. The
         [CryptoKey.purpose][google.cloud.kms.v1.CryptoKey.purpose] must
         be
-        [ENCRYPT_DECRYPT][google.cloud.kms.v1.CryptoKey.CryptoKeyPurpose.ENCRYPT_DECRYPT].
+        [ENCRYPT\_DECRYPT][google.cloud.kms.v1.CryptoKey.CryptoKeyPurpose.ENCRYPT\_DECRYPT].
 
         Returns:
             Callable[[~.EncryptRequest],
@@ -663,7 +667,7 @@ class KeyManagementServiceGrpcTransport(KeyManagementServiceTransport):
         [Encrypt][google.cloud.kms.v1.KeyManagementService.Encrypt]. The
         [CryptoKey.purpose][google.cloud.kms.v1.CryptoKey.purpose] must
         be
-        [ENCRYPT_DECRYPT][google.cloud.kms.v1.CryptoKey.CryptoKeyPurpose.ENCRYPT_DECRYPT].
+        [ENCRYPT\_DECRYPT][google.cloud.kms.v1.CryptoKey.CryptoKeyPurpose.ENCRYPT\_DECRYPT].
 
         Returns:
             Callable[[~.DecryptRequest],
@@ -692,8 +696,8 @@ class KeyManagementServiceGrpcTransport(KeyManagementServiceTransport):
         Signs data using a
         [CryptoKeyVersion][google.cloud.kms.v1.CryptoKeyVersion] with
         [CryptoKey.purpose][google.cloud.kms.v1.CryptoKey.purpose]
-        ASYMMETRIC_SIGN, producing a signature that can be verified with
-        the public key retrieved from
+        ASYMMETRIC\_SIGN, producing a signature that can be verified
+        with the public key retrieved from
         [GetPublicKey][google.cloud.kms.v1.KeyManagementService.GetPublicKey].
 
         Returns:
@@ -726,7 +730,7 @@ class KeyManagementServiceGrpcTransport(KeyManagementServiceTransport):
         corresponding to a
         [CryptoKeyVersion][google.cloud.kms.v1.CryptoKeyVersion] with
         [CryptoKey.purpose][google.cloud.kms.v1.CryptoKey.purpose]
-        ASYMMETRIC_DECRYPT.
+        ASYMMETRIC\_DECRYPT.
 
         Returns:
             Callable[[~.AsymmetricDecryptRequest],
@@ -790,9 +794,9 @@ class KeyManagementServiceGrpcTransport(KeyManagementServiceTransport):
         Upon calling this method,
         [CryptoKeyVersion.state][google.cloud.kms.v1.CryptoKeyVersion.state]
         will be set to
-        [DESTROY_SCHEDULED][google.cloud.kms.v1.CryptoKeyVersion.CryptoKeyVersionState.DESTROY_SCHEDULED]
+        [DESTROY\_SCHEDULED][google.cloud.kms.v1.CryptoKeyVersion.CryptoKeyVersionState.DESTROY\_SCHEDULED]
         and
-        [destroy_time][google.cloud.kms.v1.CryptoKeyVersion.destroy_time]
+        [destroy\_time][google.cloud.kms.v1.CryptoKeyVersion.destroy\_time]
         will be set to a time 24 hours in the future, at which point the
         [state][google.cloud.kms.v1.CryptoKeyVersion.state] will be
         changed to
@@ -800,7 +804,7 @@ class KeyManagementServiceGrpcTransport(KeyManagementServiceTransport):
         and the key material will be irrevocably destroyed.
 
         Before the
-        [destroy_time][google.cloud.kms.v1.CryptoKeyVersion.destroy_time]
+        [destroy\_time][google.cloud.kms.v1.CryptoKeyVersion.destroy\_time]
         is reached,
         [RestoreCryptoKeyVersion][google.cloud.kms.v1.KeyManagementService.RestoreCryptoKeyVersion]
         may be called to reverse the process.
@@ -831,7 +835,7 @@ class KeyManagementServiceGrpcTransport(KeyManagementServiceTransport):
 
         Restore a
         [CryptoKeyVersion][google.cloud.kms.v1.CryptoKeyVersion] in the
-        [DESTROY_SCHEDULED][google.cloud.kms.v1.CryptoKeyVersion.CryptoKeyVersionState.DESTROY_SCHEDULED]
+        [DESTROY\_SCHEDULED][google.cloud.kms.v1.CryptoKeyVersion.CryptoKeyVersionState.DESTROY\_SCHEDULED]
         state.
 
         Upon restoration of the CryptoKeyVersion,
@@ -839,7 +843,7 @@ class KeyManagementServiceGrpcTransport(KeyManagementServiceTransport):
         to
         [DISABLED][google.cloud.kms.v1.CryptoKeyVersion.CryptoKeyVersionState.DISABLED],
         and
-        [destroy_time][google.cloud.kms.v1.CryptoKeyVersion.destroy_time]
+        [destroy\_time][google.cloud.kms.v1.CryptoKeyVersion.destroy\_time]
         will be cleared.
 
         Returns:

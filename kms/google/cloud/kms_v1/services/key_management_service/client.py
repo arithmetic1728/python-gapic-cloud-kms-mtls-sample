@@ -16,6 +16,7 @@
 #
 
 from collections import OrderedDict
+import os
 import re
 from typing import Callable, Dict, Sequence, Tuple, Type, Union
 import pkg_resources
@@ -25,6 +26,8 @@ from google.api_core import exceptions                 # type: ignore
 from google.api_core import gapic_v1                   # type: ignore
 from google.api_core import retry as retries           # type: ignore
 from google.auth import credentials                    # type: ignore
+from google.auth.transport import mtls                 # type: ignore
+from google.auth.exceptions import MutualTLSChannelError  # type: ignore
 from google.oauth2 import service_account              # type: ignore
 
 from google.cloud.kms_v1.services.key_management_service import pagers
@@ -140,16 +143,6 @@ class KeyManagementServiceClient(metaclass=KeyManagementServiceClientMeta):
     from_service_account_json = from_service_account_file
 
     @staticmethod
-    def import_job_path(project: str,location: str,key_ring: str,import_job: str,) -> str:
-        """Return a fully-qualified import_job string."""
-        return "projects/{project}/locations/{location}/keyRings/{key_ring}/importJobs/{import_job}".format(project=project, location=location, key_ring=key_ring, import_job=import_job, )
-
-    @staticmethod
-    def parse_import_job_path(path: str) -> Dict[str,str]:
-        """Parse a import_job path into its component segments."""
-        m = re.match(r"^projects/(?P<project>.+?)/locations/(?P<location>.+?)/keyRings/(?P<key_ring>.+?)/importJobs/(?P<import_job>.+?)$", path)
-        return m.groupdict() if m else {}
-    @staticmethod
     def key_ring_path(project: str,location: str,key_ring: str,) -> str:
         """Return a fully-qualified key_ring string."""
         return "projects/{project}/locations/{location}/keyRings/{key_ring}".format(project=project, location=location, key_ring=key_ring, )
@@ -160,16 +153,6 @@ class KeyManagementServiceClient(metaclass=KeyManagementServiceClientMeta):
         m = re.match(r"^projects/(?P<project>.+?)/locations/(?P<location>.+?)/keyRings/(?P<key_ring>.+?)$", path)
         return m.groupdict() if m else {}
     @staticmethod
-    def crypto_key_version_path(project: str,location: str,key_ring: str,crypto_key: str,crypto_key_version: str,) -> str:
-        """Return a fully-qualified crypto_key_version string."""
-        return "projects/{project}/locations/{location}/keyRings/{key_ring}/cryptoKeys/{crypto_key}/cryptoKeyVersions/{crypto_key_version}".format(project=project, location=location, key_ring=key_ring, crypto_key=crypto_key, crypto_key_version=crypto_key_version, )
-
-    @staticmethod
-    def parse_crypto_key_version_path(path: str) -> Dict[str,str]:
-        """Parse a crypto_key_version path into its component segments."""
-        m = re.match(r"^projects/(?P<project>.+?)/locations/(?P<location>.+?)/keyRings/(?P<key_ring>.+?)/cryptoKeys/(?P<crypto_key>.+?)/cryptoKeyVersions/(?P<crypto_key_version>.+?)$", path)
-        return m.groupdict() if m else {}
-    @staticmethod
     def crypto_key_path(project: str,location: str,key_ring: str,crypto_key: str,) -> str:
         """Return a fully-qualified crypto_key string."""
         return "projects/{project}/locations/{location}/keyRings/{key_ring}/cryptoKeys/{crypto_key}".format(project=project, location=location, key_ring=key_ring, crypto_key=crypto_key, )
@@ -178,6 +161,26 @@ class KeyManagementServiceClient(metaclass=KeyManagementServiceClientMeta):
     def parse_crypto_key_path(path: str) -> Dict[str,str]:
         """Parse a crypto_key path into its component segments."""
         m = re.match(r"^projects/(?P<project>.+?)/locations/(?P<location>.+?)/keyRings/(?P<key_ring>.+?)/cryptoKeys/(?P<crypto_key>.+?)$", path)
+        return m.groupdict() if m else {}
+    @staticmethod
+    def import_job_path(project: str,location: str,key_ring: str,import_job: str,) -> str:
+        """Return a fully-qualified import_job string."""
+        return "projects/{project}/locations/{location}/keyRings/{key_ring}/importJobs/{import_job}".format(project=project, location=location, key_ring=key_ring, import_job=import_job, )
+
+    @staticmethod
+    def parse_import_job_path(path: str) -> Dict[str,str]:
+        """Parse a import_job path into its component segments."""
+        m = re.match(r"^projects/(?P<project>.+?)/locations/(?P<location>.+?)/keyRings/(?P<key_ring>.+?)/importJobs/(?P<import_job>.+?)$", path)
+        return m.groupdict() if m else {}
+    @staticmethod
+    def crypto_key_version_path(project: str,location: str,key_ring: str,crypto_key: str,crypto_key_version: str,) -> str:
+        """Return a fully-qualified crypto_key_version string."""
+        return "projects/{project}/locations/{location}/keyRings/{key_ring}/cryptoKeys/{crypto_key}/cryptoKeyVersions/{crypto_key_version}".format(project=project, location=location, key_ring=key_ring, crypto_key=crypto_key, crypto_key_version=crypto_key_version, )
+
+    @staticmethod
+    def parse_crypto_key_version_path(path: str) -> Dict[str,str]:
+        """Parse a crypto_key_version path into its component segments."""
+        m = re.match(r"^projects/(?P<project>.+?)/locations/(?P<location>.+?)/keyRings/(?P<key_ring>.+?)/cryptoKeys/(?P<crypto_key>.+?)/cryptoKeyVersions/(?P<crypto_key_version>.+?)$", path)
         return m.groupdict() if m else {}
 
     def __init__(self, *,
@@ -196,21 +199,47 @@ class KeyManagementServiceClient(metaclass=KeyManagementServiceClientMeta):
             transport (Union[str, ~.KeyManagementServiceTransport]): The
                 transport to use. If set to None, a transport is chosen
                 automatically.
-            client_options (ClientOptions): Custom options for the client.
+            client_options (ClientOptions): Custom options for the client. It
+                won't take effect unless ``transport`` is None.
                 (1) The ``api_endpoint`` property can be used to override the
-                default endpoint provided by the client.
-                (2) If ``transport`` argument is None, ``client_options`` can be
-                used to create a mutual TLS transport. If ``client_cert_source``
-                is provided, mutual TLS transport will be created with the given
-                ``api_endpoint`` or the default mTLS endpoint, and the client
-                SSL credentials obtained from ``client_cert_source``.
+                default endpoint provided by the client. GOOGLE_API_USE_MTLS
+                environment variable can also be used to override the endpoint:
+                "Always" (always use the default mTLS endpoint), "Never" (always
+                use the default regular endpoint, this is the default value for
+                the environment variable) and "Auto" (auto switch to the default
+                mTLS endpoint if client SSL credentials is present). However,
+                the ``api_endpoint`` property takes precedence if provided.
+                (2) The ``client_cert_source`` property is used to provide client
+                SSL credentials for mutual TLS transport. If not provided, the
+                default SSL credentials will be used if present.
 
         Raises:
-            google.auth.exceptions.MutualTlsChannelError: If mutual TLS transport
+            google.auth.exceptions.MutualTLSChannelError: If mutual TLS transport
                 creation failed for any reason.
         """
         if isinstance(client_options, dict):
             client_options = ClientOptions.from_dict(client_options)
+        if client_options is None:
+            client_options = ClientOptions.ClientOptions()
+
+        if transport is None and client_options.api_endpoint is None:
+            use_mtls_env = os.getenv("GOOGLE_API_USE_MTLS", "Never")
+            if use_mtls_env == "Never":
+                client_options.api_endpoint = self.DEFAULT_ENDPOINT
+            elif use_mtls_env == "Always":
+                client_options.api_endpoint = self.DEFAULT_MTLS_ENDPOINT
+            elif use_mtls_env == "Auto":
+                has_client_cert_source = (
+                    client_options.client_cert_source is not None
+                    or mtls.has_default_client_cert_source()
+                )
+                client_options.api_endpoint = (
+                    self.DEFAULT_MTLS_ENDPOINT if has_client_cert_source else self.DEFAULT_ENDPOINT
+                )
+            else:
+                raise MutualTLSChannelError(
+                    "Unsupported GOOGLE_API_USE_MTLS value. Accepted values: Never, Auto, Always"
+                )
 
         # Save or instantiate the transport.
         # Ordinarily, we provide the transport, but allowing a custom transport
@@ -221,38 +250,16 @@ class KeyManagementServiceClient(metaclass=KeyManagementServiceClientMeta):
                 raise ValueError('When providing a transport instance, '
                                  'provide its credentials directly.')
             self._transport = transport
-        elif client_options is None or (
-            client_options.api_endpoint is None
-            and client_options.client_cert_source is None
-        ):
-            # Don't trigger mTLS if we get an empty ClientOptions.
+        elif isinstance(transport, str):
             Transport = type(self).get_transport_class(transport)
             self._transport = Transport(
                 credentials=credentials, host=self.DEFAULT_ENDPOINT
             )
         else:
-            # We have a non-empty ClientOptions. If client_cert_source is
-            # provided, trigger mTLS with user provided endpoint or the default
-            # mTLS endpoint.
-            if client_options.client_cert_source:
-                api_mtls_endpoint = (
-                    client_options.api_endpoint
-                    if client_options.api_endpoint
-                    else self.DEFAULT_MTLS_ENDPOINT
-                )
-            else:
-                api_mtls_endpoint = None
-
-            api_endpoint = (
-                client_options.api_endpoint
-                if client_options.api_endpoint
-                else self.DEFAULT_ENDPOINT
-            )
-
             self._transport = KeyManagementServiceGrpcTransport(
                 credentials=credentials,
-                host=api_endpoint,
-                api_mtls_endpoint=api_mtls_endpoint,
+                host=client_options.api_endpoint,
+                api_mtls_endpoint=client_options.api_endpoint,
                 client_cert_source=client_options.client_cert_source,
             )
 
@@ -871,9 +878,9 @@ class KeyManagementServiceClient(metaclass=KeyManagementServiceClientMeta):
         [CryptoKeyVersion][google.cloud.kms.v1.CryptoKeyVersion]. The
         [CryptoKey.purpose][google.cloud.kms.v1.CryptoKey.purpose] must
         be
-        [ASYMMETRIC_SIGN][google.cloud.kms.v1.CryptoKey.CryptoKeyPurpose.ASYMMETRIC_SIGN]
+        [ASYMMETRIC\_SIGN][google.cloud.kms.v1.CryptoKey.CryptoKeyPurpose.ASYMMETRIC\_SIGN]
         or
-        [ASYMMETRIC_DECRYPT][google.cloud.kms.v1.CryptoKey.CryptoKeyPurpose.ASYMMETRIC_DECRYPT].
+        [ASYMMETRIC\_DECRYPT][google.cloud.kms.v1.CryptoKey.CryptoKeyPurpose.ASYMMETRIC\_DECRYPT].
 
         Args:
             request (:class:`~.service.GetPublicKeyRequest`):
@@ -988,13 +995,13 @@ class KeyManagementServiceClient(metaclass=KeyManagementServiceClientMeta):
                 to encrypt (also known as wrap) the pre-existing key
                 material to protect it during the import process. The
                 nature of the wrapping key depends on the choice of
-                [import_method][google.cloud.kms.v1.ImportJob.import_method].
+                [import\_method][google.cloud.kms.v1.ImportJob.import\_method].
                 When the wrapping key generation is complete, the
                 [state][google.cloud.kms.v1.ImportJob.state] will be set
                 to
                 [ACTIVE][google.cloud.kms.v1.ImportJob.ImportJobState.ACTIVE]
                 and the
-                [public_key][google.cloud.kms.v1.ImportJob.public_key]
+                [public\_key][google.cloud.kms.v1.ImportJob.public\_key]
                 can be fetched. The fetched public key can then be used
                 to wrap your pre-existing key material.
 
@@ -1166,7 +1173,7 @@ class KeyManagementServiceClient(metaclass=KeyManagementServiceClientMeta):
         [KeyRing][google.cloud.kms.v1.KeyRing].
 
         [CryptoKey.purpose][google.cloud.kms.v1.CryptoKey.purpose] and
-        [CryptoKey.version_template.algorithm][google.cloud.kms.v1.CryptoKeyVersionTemplate.algorithm]
+        [CryptoKey.version\_template.algorithm][google.cloud.kms.v1.CryptoKeyVersionTemplate.algorithm]
         are required.
 
         Args:
@@ -1430,7 +1437,7 @@ class KeyManagementServiceClient(metaclass=KeyManagementServiceClientMeta):
         r"""Create a new [ImportJob][google.cloud.kms.v1.ImportJob] within a
         [KeyRing][google.cloud.kms.v1.KeyRing].
 
-        [ImportJob.import_method][google.cloud.kms.v1.ImportJob.import_method]
+        [ImportJob.import\_method][google.cloud.kms.v1.ImportJob.import\_method]
         is required.
 
         Args:
@@ -1478,13 +1485,13 @@ class KeyManagementServiceClient(metaclass=KeyManagementServiceClientMeta):
                 to encrypt (also known as wrap) the pre-existing key
                 material to protect it during the import process. The
                 nature of the wrapping key depends on the choice of
-                [import_method][google.cloud.kms.v1.ImportJob.import_method].
+                [import\_method][google.cloud.kms.v1.ImportJob.import\_method].
                 When the wrapping key generation is complete, the
                 [state][google.cloud.kms.v1.ImportJob.state] will be set
                 to
                 [ACTIVE][google.cloud.kms.v1.ImportJob.ImportJobState.ACTIVE]
                 and the
-                [public_key][google.cloud.kms.v1.ImportJob.public_key]
+                [public\_key][google.cloud.kms.v1.ImportJob.public\_key]
                 can be fetched. The fetched public key can then be used
                 to wrap your pre-existing key material.
 
@@ -1749,7 +1756,7 @@ class KeyManagementServiceClient(metaclass=KeyManagementServiceClientMeta):
         [Decrypt][google.cloud.kms.v1.KeyManagementService.Decrypt]. The
         [CryptoKey.purpose][google.cloud.kms.v1.CryptoKey.purpose] must
         be
-        [ENCRYPT_DECRYPT][google.cloud.kms.v1.CryptoKey.CryptoKeyPurpose.ENCRYPT_DECRYPT].
+        [ENCRYPT\_DECRYPT][google.cloud.kms.v1.CryptoKey.CryptoKeyPurpose.ENCRYPT\_DECRYPT].
 
         Args:
             request (:class:`~.service.EncryptRequest`):
@@ -1772,13 +1779,13 @@ class KeyManagementServiceClient(metaclass=KeyManagementServiceClientMeta):
                 64KiB.
 
                 The maximum size depends on the key version's
-                [protection_level][google.cloud.kms.v1.CryptoKeyVersionTemplate.protection_level].
+                [protection\_level][google.cloud.kms.v1.CryptoKeyVersionTemplate.protection\_level].
                 For
                 [SOFTWARE][google.cloud.kms.v1.ProtectionLevel.SOFTWARE]
                 keys, the plaintext must be no larger than 64KiB. For
                 [HSM][google.cloud.kms.v1.ProtectionLevel.HSM] keys, the
                 combined length of the plaintext and
-                additional_authenticated_data fields must be no larger
+                additional\_authenticated\_data fields must be no larger
                 than 8KiB.
                 This corresponds to the ``plaintext`` field
                 on the ``request`` instance; if ``request`` is provided, this
@@ -1845,7 +1852,7 @@ class KeyManagementServiceClient(metaclass=KeyManagementServiceClientMeta):
         [Encrypt][google.cloud.kms.v1.KeyManagementService.Encrypt]. The
         [CryptoKey.purpose][google.cloud.kms.v1.CryptoKey.purpose] must
         be
-        [ENCRYPT_DECRYPT][google.cloud.kms.v1.CryptoKey.CryptoKeyPurpose.ENCRYPT_DECRYPT].
+        [ENCRYPT\_DECRYPT][google.cloud.kms.v1.CryptoKey.CryptoKeyPurpose.ENCRYPT\_DECRYPT].
 
         Args:
             request (:class:`~.service.DecryptRequest`):
@@ -1926,8 +1933,8 @@ class KeyManagementServiceClient(metaclass=KeyManagementServiceClientMeta):
         r"""Signs data using a
         [CryptoKeyVersion][google.cloud.kms.v1.CryptoKeyVersion] with
         [CryptoKey.purpose][google.cloud.kms.v1.CryptoKey.purpose]
-        ASYMMETRIC_SIGN, producing a signature that can be verified with
-        the public key retrieved from
+        ASYMMETRIC\_SIGN, producing a signature that can be verified
+        with the public key retrieved from
         [GetPublicKey][google.cloud.kms.v1.KeyManagementService.GetPublicKey].
 
         Args:
@@ -2013,7 +2020,7 @@ class KeyManagementServiceClient(metaclass=KeyManagementServiceClientMeta):
         corresponding to a
         [CryptoKeyVersion][google.cloud.kms.v1.CryptoKeyVersion] with
         [CryptoKey.purpose][google.cloud.kms.v1.CryptoKey.purpose]
-        ASYMMETRIC_DECRYPT.
+        ASYMMETRIC\_DECRYPT.
 
         Args:
             request (:class:`~.service.AsymmetricDecryptRequest`):
@@ -2185,9 +2192,9 @@ class KeyManagementServiceClient(metaclass=KeyManagementServiceClientMeta):
         Upon calling this method,
         [CryptoKeyVersion.state][google.cloud.kms.v1.CryptoKeyVersion.state]
         will be set to
-        [DESTROY_SCHEDULED][google.cloud.kms.v1.CryptoKeyVersion.CryptoKeyVersionState.DESTROY_SCHEDULED]
+        [DESTROY\_SCHEDULED][google.cloud.kms.v1.CryptoKeyVersion.CryptoKeyVersionState.DESTROY\_SCHEDULED]
         and
-        [destroy_time][google.cloud.kms.v1.CryptoKeyVersion.destroy_time]
+        [destroy\_time][google.cloud.kms.v1.CryptoKeyVersion.destroy\_time]
         will be set to a time 24 hours in the future, at which point the
         [state][google.cloud.kms.v1.CryptoKeyVersion.state] will be
         changed to
@@ -2195,7 +2202,7 @@ class KeyManagementServiceClient(metaclass=KeyManagementServiceClientMeta):
         and the key material will be irrevocably destroyed.
 
         Before the
-        [destroy_time][google.cloud.kms.v1.CryptoKeyVersion.destroy_time]
+        [destroy\_time][google.cloud.kms.v1.CryptoKeyVersion.destroy\_time]
         is reached,
         [RestoreCryptoKeyVersion][google.cloud.kms.v1.KeyManagementService.RestoreCryptoKeyVersion]
         may be called to reverse the process.
@@ -2281,7 +2288,7 @@ class KeyManagementServiceClient(metaclass=KeyManagementServiceClientMeta):
             ) -> resources.CryptoKeyVersion:
         r"""Restore a
         [CryptoKeyVersion][google.cloud.kms.v1.CryptoKeyVersion] in the
-        [DESTROY_SCHEDULED][google.cloud.kms.v1.CryptoKeyVersion.CryptoKeyVersionState.DESTROY_SCHEDULED]
+        [DESTROY\_SCHEDULED][google.cloud.kms.v1.CryptoKeyVersion.CryptoKeyVersionState.DESTROY\_SCHEDULED]
         state.
 
         Upon restoration of the CryptoKeyVersion,
@@ -2289,7 +2296,7 @@ class KeyManagementServiceClient(metaclass=KeyManagementServiceClientMeta):
         to
         [DISABLED][google.cloud.kms.v1.CryptoKeyVersion.CryptoKeyVersionState.DISABLED],
         and
-        [destroy_time][google.cloud.kms.v1.CryptoKeyVersion.destroy_time]
+        [destroy\_time][google.cloud.kms.v1.CryptoKeyVersion.destroy\_time]
         will be cleared.
 
         Args:
