@@ -7,13 +7,14 @@ import google.oauth2.credentials
 
 
 # Fill in your project_id.
-project_id = "<FILL IN PROJECT ID>"
+project_id = "FILL IN PROJECT ID"
 
 
 def list_key_rings():
     # Get the user access token.
     cred = google.oauth2.credentials.UserAccessTokenCredentials()
 
+    # Create the client.
     client = KeyManagementServiceClient(credentials=cred)
 
     # Lists keys in the "global" location.
