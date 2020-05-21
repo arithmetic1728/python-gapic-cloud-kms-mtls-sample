@@ -42,7 +42,7 @@ class ProtectionLevel(proto.Enum):
     r"""[ProtectionLevel][google.cloud.kms.v1.ProtectionLevel] specifies how
     cryptographic operations are performed. For more information, see
     [Protection levels]
-    (https://cloud.google.com/kms/docs/algorithms#protection_levels).
+    (https://cloud.google.com/kms/docs/algorithms#protection\_levels).
     """
     PROTECTION_LEVEL_UNSPECIFIED = 0
     SOFTWARE = 1
@@ -97,7 +97,7 @@ class CryptoKey(proto.Message):
             [UpdateCryptoKeyPrimaryVersion][google.cloud.kms.v1.KeyManagementService.UpdateCryptoKeyPrimaryVersion].
 
             Keys with [purpose][google.cloud.kms.v1.CryptoKey.purpose]
-            [ENCRYPT_DECRYPT][google.cloud.kms.v1.CryptoKey.CryptoKeyPurpose.ENCRYPT_DECRYPT]
+            [ENCRYPT\_DECRYPT][google.cloud.kms.v1.CryptoKey.CryptoKeyPurpose.ENCRYPT\_DECRYPT]
             may have a primary. For other keys, this field will be
             omitted.
         purpose (~.resources.CryptoKey.CryptoKeyPurpose):
@@ -108,7 +108,7 @@ class CryptoKey(proto.Message):
             [CryptoKey][google.cloud.kms.v1.CryptoKey] was created.
         next_rotation_time (~.timestamp.Timestamp):
             At
-            [next_rotation_time][google.cloud.kms.v1.CryptoKey.next_rotation_time],
+            [next\_rotation\_time][google.cloud.kms.v1.CryptoKey.next\_rotation\_time],
             the Key Management Service will automatically:
 
             1. Create a new version of this
@@ -120,26 +120,26 @@ class CryptoKey(proto.Message):
             and
             [UpdateCryptoKeyPrimaryVersion][google.cloud.kms.v1.KeyManagementService.UpdateCryptoKeyPrimaryVersion]
             do not affect
-            [next_rotation_time][google.cloud.kms.v1.CryptoKey.next_rotation_time].
+            [next\_rotation\_time][google.cloud.kms.v1.CryptoKey.next\_rotation\_time].
 
             Keys with [purpose][google.cloud.kms.v1.CryptoKey.purpose]
-            [ENCRYPT_DECRYPT][google.cloud.kms.v1.CryptoKey.CryptoKeyPurpose.ENCRYPT_DECRYPT]
+            [ENCRYPT\_DECRYPT][google.cloud.kms.v1.CryptoKey.CryptoKeyPurpose.ENCRYPT\_DECRYPT]
             support automatic rotation. For other keys, this field must
             be omitted.
         rotation_period (~.duration.Duration):
-            [next_rotation_time][google.cloud.kms.v1.CryptoKey.next_rotation_time]
+            [next\_rotation\_time][google.cloud.kms.v1.CryptoKey.next\_rotation\_time]
             will be advanced by this period when the service
             automatically rotates a key. Must be at least 24 hours and
             at most 876,000 hours.
 
             If
-            [rotation_period][google.cloud.kms.v1.CryptoKey.rotation_period]
+            [rotation\_period][google.cloud.kms.v1.CryptoKey.rotation\_period]
             is set,
-            [next_rotation_time][google.cloud.kms.v1.CryptoKey.next_rotation_time]
+            [next\_rotation\_time][google.cloud.kms.v1.CryptoKey.next\_rotation\_time]
             must also be set.
 
             Keys with [purpose][google.cloud.kms.v1.CryptoKey.purpose]
-            [ENCRYPT_DECRYPT][google.cloud.kms.v1.CryptoKey.CryptoKeyPurpose.ENCRYPT_DECRYPT]
+            [ENCRYPT\_DECRYPT][google.cloud.kms.v1.CryptoKey.CryptoKeyPurpose.ENCRYPT\_DECRYPT]
             support automatic rotation. For other keys, this field must
             be omitted.
         version_template (~.resources.CryptoKeyVersionTemplate):
@@ -212,11 +212,11 @@ class CryptoKeyVersionTemplate(proto.Message):
             [CryptoKeyVersion][google.cloud.kms.v1.CryptoKeyVersion]
             based on this template.
 
-            For backwards compatibility, GOOGLE_SYMMETRIC_ENCRYPTION is
-            implied if both this field is omitted and
+            For backwards compatibility, GOOGLE\_SYMMETRIC\_ENCRYPTION
+            is implied if both this field is omitted and
             [CryptoKey.purpose][google.cloud.kms.v1.CryptoKey.purpose]
             is
-            [ENCRYPT_DECRYPT][google.cloud.kms.v1.CryptoKey.CryptoKeyPurpose.ENCRYPT_DECRYPT].
+            [ENCRYPT\_DECRYPT][google.cloud.kms.v1.CryptoKey.CryptoKeyPurpose.ENCRYPT\_DECRYPT].
     """
 
     protection_level = proto.Field(proto.ENUM, number=1,
@@ -292,7 +292,7 @@ class CryptoKeyVersion(proto.Message):
             HSM at key creation time. Use this statement to verify
             attributes of the key as stored on the HSM, independently of
             Google. Only provided for key versions with
-            [protection_level][google.cloud.kms.v1.CryptoKeyVersion.protection_level]
+            [protection\_level][google.cloud.kms.v1.CryptoKeyVersion.protection\_level]
             [HSM][google.cloud.kms.v1.ProtectionLevel.HSM].
         create_time (~.timestamp.Timestamp):
             Output only. The time at which this
@@ -307,7 +307,7 @@ class CryptoKeyVersion(proto.Message):
             [CryptoKeyVersion][google.cloud.kms.v1.CryptoKeyVersion]'s
             key material is scheduled for destruction. Only present if
             [state][google.cloud.kms.v1.CryptoKeyVersion.state] is
-            [DESTROY_SCHEDULED][google.cloud.kms.v1.CryptoKeyVersion.CryptoKeyVersionState.DESTROY_SCHEDULED].
+            [DESTROY\_SCHEDULED][google.cloud.kms.v1.CryptoKeyVersion.CryptoKeyVersionState.DESTROY\_SCHEDULED].
         destroy_event_time (~.timestamp.Timestamp):
             Output only. The time this CryptoKeyVersion's key material
             was destroyed. Only present if
@@ -327,7 +327,7 @@ class CryptoKeyVersion(proto.Message):
             Output only. The root cause of an import failure. Only
             present if
             [state][google.cloud.kms.v1.CryptoKeyVersion.state] is
-            [IMPORT_FAILED][google.cloud.kms.v1.CryptoKeyVersion.CryptoKeyVersionState.IMPORT_FAILED].
+            [IMPORT\_FAILED][google.cloud.kms.v1.CryptoKeyVersion.CryptoKeyVersionState.IMPORT\_FAILED].
         external_protection_level_options (~.resources.ExternalProtectionLevelOptions):
             ExternalProtectionLevelOptions stores a group of additional
             fields for configuring a
@@ -342,38 +342,38 @@ class CryptoKeyVersion(proto.Message):
         what parameters must be used for each cryptographic operation.
 
         The
-        [GOOGLE_SYMMETRIC_ENCRYPTION][google.cloud.kms.v1.CryptoKeyVersion.CryptoKeyVersionAlgorithm.GOOGLE_SYMMETRIC_ENCRYPTION]
+        [GOOGLE\_SYMMETRIC\_ENCRYPTION][google.cloud.kms.v1.CryptoKeyVersion.CryptoKeyVersionAlgorithm.GOOGLE\_SYMMETRIC\_ENCRYPTION]
         algorithm is usable with
         [CryptoKey.purpose][google.cloud.kms.v1.CryptoKey.purpose]
-        [ENCRYPT_DECRYPT][google.cloud.kms.v1.CryptoKey.CryptoKeyPurpose.ENCRYPT_DECRYPT].
+        [ENCRYPT\_DECRYPT][google.cloud.kms.v1.CryptoKey.CryptoKeyPurpose.ENCRYPT\_DECRYPT].
 
-        Algorithms beginning with "RSA_SIGN_" are usable with
+        Algorithms beginning with "RSA\_SIGN\_" are usable with
         [CryptoKey.purpose][google.cloud.kms.v1.CryptoKey.purpose]
-        [ASYMMETRIC_SIGN][google.cloud.kms.v1.CryptoKey.CryptoKeyPurpose.ASYMMETRIC_SIGN].
+        [ASYMMETRIC\_SIGN][google.cloud.kms.v1.CryptoKey.CryptoKeyPurpose.ASYMMETRIC\_SIGN].
 
-        The fields in the name after "RSA_SIGN_" correspond to the following
-        parameters: padding algorithm, modulus bit length, and digest
-        algorithm.
-
-        For PSS, the salt length used is equal to the length of digest
-        algorithm. For example,
-        [RSA_SIGN_PSS_2048_SHA256][google.cloud.kms.v1.CryptoKeyVersion.CryptoKeyVersionAlgorithm.RSA_SIGN_PSS_2048_SHA256]
-        will use PSS with a salt length of 256 bits or 32 bytes.
-
-        Algorithms beginning with "RSA_DECRYPT_" are usable with
-        [CryptoKey.purpose][google.cloud.kms.v1.CryptoKey.purpose]
-        [ASYMMETRIC_DECRYPT][google.cloud.kms.v1.CryptoKey.CryptoKeyPurpose.ASYMMETRIC_DECRYPT].
-
-        The fields in the name after "RSA_DECRYPT_" correspond to the
+        The fields in the name after "RSA\_SIGN\_" correspond to the
         following parameters: padding algorithm, modulus bit length, and
         digest algorithm.
 
-        Algorithms beginning with "EC_SIGN_" are usable with
-        [CryptoKey.purpose][google.cloud.kms.v1.CryptoKey.purpose]
-        [ASYMMETRIC_SIGN][google.cloud.kms.v1.CryptoKey.CryptoKeyPurpose.ASYMMETRIC_SIGN].
+        For PSS, the salt length used is equal to the length of digest
+        algorithm. For example,
+        [RSA\_SIGN\_PSS\_2048\_SHA256][google.cloud.kms.v1.CryptoKeyVersion.CryptoKeyVersionAlgorithm.RSA\_SIGN\_PSS\_2048\_SHA256]
+        will use PSS with a salt length of 256 bits or 32 bytes.
 
-        The fields in the name after "EC_SIGN_" correspond to the following
-        parameters: elliptic curve, digest algorithm.
+        Algorithms beginning with "RSA\_DECRYPT\_" are usable with
+        [CryptoKey.purpose][google.cloud.kms.v1.CryptoKey.purpose]
+        [ASYMMETRIC\_DECRYPT][google.cloud.kms.v1.CryptoKey.CryptoKeyPurpose.ASYMMETRIC\_DECRYPT].
+
+        The fields in the name after "RSA\_DECRYPT\_" correspond to the
+        following parameters: padding algorithm, modulus bit length, and
+        digest algorithm.
+
+        Algorithms beginning with "EC\_SIGN\_" are usable with
+        [CryptoKey.purpose][google.cloud.kms.v1.CryptoKey.purpose]
+        [ASYMMETRIC\_SIGN][google.cloud.kms.v1.CryptoKey.CryptoKeyPurpose.ASYMMETRIC\_SIGN].
+
+        The fields in the name after "EC\_SIGN\_" correspond to the
+        following parameters: elliptic curve, digest algorithm.
 
         For more information, see [Key purposes and algorithms]
         (https://cloud.google.com/kms/docs/algorithms).
@@ -494,11 +494,11 @@ class ImportJob(proto.Message):
     pair. You use the wrapping key to encrypt (also known as wrap) the
     pre-existing key material to protect it during the import process.
     The nature of the wrapping key depends on the choice of
-    [import_method][google.cloud.kms.v1.ImportJob.import_method]. When
+    [import\_method][google.cloud.kms.v1.ImportJob.import\_method]. When
     the wrapping key generation is complete, the
     [state][google.cloud.kms.v1.ImportJob.state] will be set to
     [ACTIVE][google.cloud.kms.v1.ImportJob.ImportJobState.ACTIVE] and
-    the [public_key][google.cloud.kms.v1.ImportJob.public_key] can be
+    the [public\_key][google.cloud.kms.v1.ImportJob.public\_key] can be
     fetched. The fetched public key can then be used to wrap your
     pre-existing key material.
 
@@ -532,9 +532,9 @@ class ImportJob(proto.Message):
             Required. Immutable. The protection level of the
             [ImportJob][google.cloud.kms.v1.ImportJob]. This must match
             the
-            [protection_level][google.cloud.kms.v1.CryptoKeyVersionTemplate.protection_level]
+            [protection\_level][google.cloud.kms.v1.CryptoKeyVersionTemplate.protection\_level]
             of the
-            [version_template][google.cloud.kms.v1.CryptoKey.version_template]
+            [version\_template][google.cloud.kms.v1.CryptoKey.version\_template]
             on the [CryptoKey][google.cloud.kms.v1.CryptoKey] you
             attempt to import into.
         create_time (~.timestamp.Timestamp):

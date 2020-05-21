@@ -15,6 +15,7 @@
 # limitations under the License.
 #
 
+import os
 from unittest import mock
 
 import grpc
@@ -25,6 +26,7 @@ from google import auth
 from google.api_core import client_options
 from google.api_core import grpc_helpers
 from google.auth import credentials
+from google.auth.exceptions import MutualTLSChannelError
 from google.cloud.kms_v1.services.key_management_service import KeyManagementServiceClient
 from google.cloud.kms_v1.services.key_management_service import pagers
 from google.cloud.kms_v1.services.key_management_service import transports
@@ -68,6 +70,14 @@ def test_key_management_service_client_from_service_account_file():
         assert client._transport._host == 'cloudkms.googleapis.com:443'
 
 
+def test_key_management_service_client_get_transport_class():
+    transport = KeyManagementServiceClient.get_transport_class()
+    assert transport == transports.KeyManagementServiceGrpcTransport
+
+    transport = KeyManagementServiceClient.get_transport_class("grpc")
+    assert transport == transports.KeyManagementServiceGrpcTransport
+
+
 def test_key_management_service_client_client_options():
     # Check that if channel is provided we won't create a new one.
     with mock.patch('google.cloud.kms_v1.services.key_management_service.KeyManagementServiceClient.get_transport_class') as gtc:
@@ -77,33 +87,53 @@ def test_key_management_service_client_client_options():
         client = KeyManagementServiceClient(transport=transport)
         gtc.assert_not_called()
 
-    # Check mTLS is not triggered with empty client options.
-    options = client_options.ClientOptions()
+    # Check that if channel is provided via str we will create a new one.
     with mock.patch('google.cloud.kms_v1.services.key_management_service.KeyManagementServiceClient.get_transport_class') as gtc:
-        transport = gtc.return_value = mock.MagicMock()
-        client = KeyManagementServiceClient(client_options=options)
-        transport.assert_called_once_with(
-            credentials=None,
-            host=client.DEFAULT_ENDPOINT,
-        )
+        client = KeyManagementServiceClient(transport="grpc")
+        gtc.assert_called()
 
-    # Check mTLS is not triggered if api_endpoint is provided but
-    # client_cert_source is None.
+    # Check the case api_endpoint is provided.
     options = client_options.ClientOptions(api_endpoint="squid.clam.whelk")
     with mock.patch('google.cloud.kms_v1.services.key_management_service.transports.KeyManagementServiceGrpcTransport.__init__') as grpc_transport:
         grpc_transport.return_value = None
         client = KeyManagementServiceClient(client_options=options)
         grpc_transport.assert_called_once_with(
-            api_mtls_endpoint=None,
+            api_mtls_endpoint="squid.clam.whelk",
             client_cert_source=None,
             credentials=None,
             host="squid.clam.whelk",
         )
 
-    # Check mTLS is triggered if client_cert_source is provided.
-    options = client_options.ClientOptions(
-        client_cert_source=client_cert_source_callback
-    )
+    # Check the case api_endpoint is not provided and GOOGLE_API_USE_MTLS is
+    # "Never".
+    os.environ["GOOGLE_API_USE_MTLS"] = "Never"
+    with mock.patch('google.cloud.kms_v1.services.key_management_service.transports.KeyManagementServiceGrpcTransport.__init__') as grpc_transport:
+        grpc_transport.return_value = None
+        client = KeyManagementServiceClient()
+        grpc_transport.assert_called_once_with(
+            api_mtls_endpoint=client.DEFAULT_ENDPOINT,
+            client_cert_source=None,
+            credentials=None,
+            host=client.DEFAULT_ENDPOINT,
+        )
+
+    # Check the case api_endpoint is not provided and GOOGLE_API_USE_MTLS is
+    # "Always".
+    os.environ["GOOGLE_API_USE_MTLS"] = "Always"
+    with mock.patch('google.cloud.kms_v1.services.key_management_service.transports.KeyManagementServiceGrpcTransport.__init__') as grpc_transport:
+        grpc_transport.return_value = None
+        client = KeyManagementServiceClient()
+        grpc_transport.assert_called_once_with(
+            api_mtls_endpoint=client.DEFAULT_MTLS_ENDPOINT,
+            client_cert_source=None,
+            credentials=None,
+            host=client.DEFAULT_MTLS_ENDPOINT,
+        )
+
+    # Check the case api_endpoint is not provided, GOOGLE_API_USE_MTLS is
+    # "Auto", and client_cert_source is provided.
+    os.environ["GOOGLE_API_USE_MTLS"] = "Auto"
+    options = client_options.ClientOptions(client_cert_source=client_cert_source_callback)
     with mock.patch('google.cloud.kms_v1.services.key_management_service.transports.KeyManagementServiceGrpcTransport.__init__') as grpc_transport:
         grpc_transport.return_value = None
         client = KeyManagementServiceClient(client_options=options)
@@ -111,23 +141,45 @@ def test_key_management_service_client_client_options():
             api_mtls_endpoint=client.DEFAULT_MTLS_ENDPOINT,
             client_cert_source=client_cert_source_callback,
             credentials=None,
-            host=client.DEFAULT_ENDPOINT,
+            host=client.DEFAULT_MTLS_ENDPOINT,
         )
 
-    # Check mTLS is triggered if api_endpoint and client_cert_source are provided.
-    options = client_options.ClientOptions(
-        api_endpoint="squid.clam.whelk",
-        client_cert_source=client_cert_source_callback
-    )
+    # Check the case api_endpoint is not provided, GOOGLE_API_USE_MTLS is
+    # "Auto", and default_client_cert_source is provided.
+    os.environ["GOOGLE_API_USE_MTLS"] = "Auto"
     with mock.patch('google.cloud.kms_v1.services.key_management_service.transports.KeyManagementServiceGrpcTransport.__init__') as grpc_transport:
-        grpc_transport.return_value = None
-        client = KeyManagementServiceClient(client_options=options)
-        grpc_transport.assert_called_once_with(
-            api_mtls_endpoint="squid.clam.whelk",
-            client_cert_source=client_cert_source_callback,
-            credentials=None,
-            host="squid.clam.whelk",
-        )
+        with mock.patch('google.auth.transport.mtls.has_default_client_cert_source', return_value=True):
+            grpc_transport.return_value = None
+            client = KeyManagementServiceClient()
+            grpc_transport.assert_called_once_with(
+                api_mtls_endpoint=client.DEFAULT_MTLS_ENDPOINT,
+                client_cert_source=None,
+                credentials=None,
+                host=client.DEFAULT_MTLS_ENDPOINT,
+            )
+
+    # Check the case api_endpoint is not provided, GOOGLE_API_USE_MTLS is
+    # "Auto", but client_cert_source and default_client_cert_source are None.
+    os.environ["GOOGLE_API_USE_MTLS"] = "Auto"
+    with mock.patch('google.cloud.kms_v1.services.key_management_service.transports.KeyManagementServiceGrpcTransport.__init__') as grpc_transport:
+        with mock.patch('google.auth.transport.mtls.has_default_client_cert_source', return_value=False):
+            grpc_transport.return_value = None
+            client = KeyManagementServiceClient()
+            grpc_transport.assert_called_once_with(
+                api_mtls_endpoint=client.DEFAULT_ENDPOINT,
+                client_cert_source=None,
+                credentials=None,
+                host=client.DEFAULT_ENDPOINT,
+            )
+
+    # Check the case api_endpoint is not provided and GOOGLE_API_USE_MTLS has
+    # unsupported value.
+    os.environ["GOOGLE_API_USE_MTLS"] = "Unsupported"
+    with pytest.raises(MutualTLSChannelError):
+        client = KeyManagementServiceClient()
+
+    del os.environ["GOOGLE_API_USE_MTLS"]
+
 
 def test_key_management_service_client_client_options_from_dict():
     with mock.patch('google.cloud.kms_v1.services.key_management_service.transports.KeyManagementServiceGrpcTransport.__init__') as grpc_transport:
@@ -136,7 +188,7 @@ def test_key_management_service_client_client_options_from_dict():
             client_options={'api_endpoint': 'squid.clam.whelk'}
         )
         grpc_transport.assert_called_once_with(
-            api_mtls_endpoint=None,
+            api_mtls_endpoint="squid.clam.whelk",
             client_cert_source=None,
             credentials=None,
             host="squid.clam.whelk",
@@ -2575,11 +2627,22 @@ def test_key_management_service_auth_adc():
         ))
 
 
+def test_key_management_service_transport_auth_adc():
+    # If credentials and host are not provided, the transport class should use
+    # ADC credentials.
+    with mock.patch.object(auth, 'default') as adc:
+        adc.return_value = (credentials.AnonymousCredentials(), None)
+        transports.KeyManagementServiceGrpcTransport(host="squid.clam.whelk")
+        adc.assert_called_once_with(scopes=(
+            'https://www.googleapis.com/auth/cloud-platform',
+            'https://www.googleapis.com/auth/cloudkms',
+        ))
+
+
 def test_key_management_service_host_no_port():
     client = KeyManagementServiceClient(
         credentials=credentials.AnonymousCredentials(),
         client_options=client_options.ClientOptions(api_endpoint='cloudkms.googleapis.com'),
-        transport='grpc',
     )
     assert client._transport._host == 'cloudkms.googleapis.com:443'
 
@@ -2588,7 +2651,6 @@ def test_key_management_service_host_with_port():
     client = KeyManagementServiceClient(
         credentials=credentials.AnonymousCredentials(),
         client_options=client_options.ClientOptions(api_endpoint='cloudkms.googleapis.com:8000'),
-        transport='grpc',
     )
     assert client._transport._host == 'cloudkms.googleapis.com:8000'
 
@@ -2684,6 +2746,54 @@ def test_key_management_service_grpc_transport_channel_mtls_with_adc(
         assert transport.grpc_channel == mock_grpc_channel
 
 
+def test_key_ring_path():
+    project = "squid"
+    location = "clam"
+    key_ring = "whelk"
+
+    expected = "projects/{project}/locations/{location}/keyRings/{key_ring}".format(project=project, location=location, key_ring=key_ring, )
+    actual = KeyManagementServiceClient.key_ring_path(project, location, key_ring)
+    assert expected == actual
+
+
+def test_parse_key_ring_path():
+    expected = {
+    "project": "octopus",
+    "location": "oyster",
+    "key_ring": "nudibranch",
+
+    }
+    path = KeyManagementServiceClient.key_ring_path(**expected)
+
+    # Check that the path construction is reversible.
+    actual = KeyManagementServiceClient.parse_key_ring_path(path)
+    assert expected == actual
+
+def test_crypto_key_path():
+    project = "squid"
+    location = "clam"
+    key_ring = "whelk"
+    crypto_key = "octopus"
+
+    expected = "projects/{project}/locations/{location}/keyRings/{key_ring}/cryptoKeys/{crypto_key}".format(project=project, location=location, key_ring=key_ring, crypto_key=crypto_key, )
+    actual = KeyManagementServiceClient.crypto_key_path(project, location, key_ring, crypto_key)
+    assert expected == actual
+
+
+def test_parse_crypto_key_path():
+    expected = {
+    "project": "oyster",
+    "location": "nudibranch",
+    "key_ring": "cuttlefish",
+    "crypto_key": "mussel",
+
+    }
+    path = KeyManagementServiceClient.crypto_key_path(**expected)
+
+    # Check that the path construction is reversible.
+    actual = KeyManagementServiceClient.parse_crypto_key_path(path)
+    assert expected == actual
+
 def test_import_job_path():
     project = "squid"
     location = "clam"
@@ -2707,29 +2817,6 @@ def test_parse_import_job_path():
 
     # Check that the path construction is reversible.
     actual = KeyManagementServiceClient.parse_import_job_path(path)
-    assert expected == actual
-
-def test_key_ring_path():
-    project = "squid"
-    location = "clam"
-    key_ring = "whelk"
-
-    expected = "projects/{project}/locations/{location}/keyRings/{key_ring}".format(project=project, location=location, key_ring=key_ring, )
-    actual = KeyManagementServiceClient.key_ring_path(project, location, key_ring)
-    assert expected == actual
-
-
-def test_parse_key_ring_path():
-    expected = {
-    "project": "octopus",
-    "location": "oyster",
-    "key_ring": "nudibranch",
-
-    }
-    path = KeyManagementServiceClient.key_ring_path(**expected)
-
-    # Check that the path construction is reversible.
-    actual = KeyManagementServiceClient.parse_key_ring_path(path)
     assert expected == actual
 
 def test_crypto_key_version_path():
@@ -2757,29 +2844,4 @@ def test_parse_crypto_key_version_path():
 
     # Check that the path construction is reversible.
     actual = KeyManagementServiceClient.parse_crypto_key_version_path(path)
-    assert expected == actual
-
-def test_crypto_key_path():
-    project = "squid"
-    location = "clam"
-    key_ring = "whelk"
-    crypto_key = "octopus"
-
-    expected = "projects/{project}/locations/{location}/keyRings/{key_ring}/cryptoKeys/{crypto_key}".format(project=project, location=location, key_ring=key_ring, crypto_key=crypto_key, )
-    actual = KeyManagementServiceClient.crypto_key_path(project, location, key_ring, crypto_key)
-    assert expected == actual
-
-
-def test_parse_crypto_key_path():
-    expected = {
-    "project": "oyster",
-    "location": "nudibranch",
-    "key_ring": "cuttlefish",
-    "crypto_key": "mussel",
-
-    }
-    path = KeyManagementServiceClient.crypto_key_path(**expected)
-
-    # Check that the path construction is reversible.
-    actual = KeyManagementServiceClient.parse_crypto_key_path(path)
     assert expected == actual
