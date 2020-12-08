@@ -15,7 +15,7 @@ def get_creds():
     from google_auth_oauthlib.flow import Flow
 
     flow = Flow.from_client_secrets_file(
-        '/usr/local/google/home/sijunliu/wks/creds/client_secret_installed.json',
+        json_file_path,
         scopes=[
             'openid', 
             'https://www.googleapis.com/auth/userinfo.email',
